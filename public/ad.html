@@ -173,6 +173,11 @@
       .project-text p {
         margin-bottom: 10px;
       }
+      .project-text img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
       .budget-table {
         width: 100%;
         border-collapse: collapse;
@@ -218,6 +223,7 @@
         font-size: 14px;
         position: relative;
         color: #666;
+        cursor: pointer;
       }
       .tab.active {
         color: #ff6b6b;
@@ -236,6 +242,12 @@
       .tab-content {
         padding: 15px;
         min-height: 200px;
+      }
+      .tab-pane {
+        display: none;
+      }
+      .tab-pane.active {
+        display: block;
       }
 
       /* 新增的支付模块样式 */
@@ -349,7 +361,7 @@
         justify-content: space-between;
         gap: 10px;
       }
-      
+
       .default-donate-btn,
       .wechat-donate-btn,
       .alipay-donate-btn {
@@ -365,50 +377,122 @@
         transition: all 0.3s;
         border: none;
       }
-      
+
       .default-donate-btn {
         background: #ff6b6b;
         color: white;
       }
-      
+
       .default-donate-btn:hover {
         background: #ff5252;
       }
-      
+
       .wechat-donate-btn {
         background: #07c160;
         color: white;
       }
-      
+
       .wechat-donate-btn:hover {
         background: #05a14e;
       }
-      
+
       .alipay-donate-btn {
         background: #1678ff;
         color: white;
       }
-      
+
       .alipay-donate-btn:hover {
         background: #1266d4;
       }
-      
+
       .donate-options img {
         width: 20px;
         height: 20px;
         margin-right: 5px;
       }
-      
+
       .donate-amount {
         font-weight: bold;
         margin: 0 2px;
+      }
+      
+      /* 执行动态样式 */
+      .update-item {
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .update-date {
+        color: #888;
+        font-size: 13px;
+        margin-bottom: 5px;
+      }
+      .update-title {
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+      .update-content {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 10px;
+      }
+      .update-images {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+      }
+      .update-images img {
+        width: 120px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 4px;
+      }
+      
+      /* 爱心榜样式 */
+      .donor-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .donor-info {
+        display: flex;
+        align-items: center;
+      }
+      .donor-avatar {
+        width: 36px;
+        height: 36px;
+        background: #ff6b6b;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        font-size: 16px;
+      }
+      .donor-name {
+        font-weight: bold;
+      }
+      .donor-date {
+        font-size: 12px;
+        color: #888;
+      }
+      .donor-message {
+        font-size: 13px;
+        color: #666;
+        margin-top: 3px;
+      }
+      .donor-amount {
+        color: #ff6b6b;
+        font-weight: bold;
       }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <img src="/api/placeholder/750/220" alt="流浪动物救助项目" />
+        <img src="/image/dog5.jpg" alt="流浪动物救助项目" />
         <div class="header-overlay">
           <h1>流浪动物救助项目</h1>
           <p>为流浪猫狗提供温暖的家和食物，共建和谐社会</p>
@@ -489,106 +573,274 @@
 
       <div class="tab-section">
         <div class="tabs">
-          <div class="tab active">项目介绍</div>
-          <div class="tab">执行动态</div>
-          <div class="tab">爱心榜</div>
+          <div class="tab active" onclick="showTab('intro')">项目介绍</div>
+          <div class="tab" onclick="showTab('updates')">执行动态</div>
+          <div class="tab" onclick="showTab('donors')">爱心榜</div>
         </div>
 
         <div class="tab-content">
-          <div class="project-info">
-            <h2 class="section-title">项目说明</h2>
-            <div class="project-text">
-              <p>
-                据中国小动物保护协会统计，我国流浪猫狗数量已超5000万只，其中70%以上的流浪动物长期处于饥饿状态。严寒、酷暑、疾病与意外，让它们的平均寿命不足3年（仅为家养宠物的1/5）。
-              </p>
+          <div id="intro" class="tab-pane active">
+            <div class="project-info">
+              <h2 class="section-title">项目说明</h2>
+              <div class="project-text">
+                <p>
+                  据中国小动物保护协会统计，我国流浪猫狗数量已超5000万只，其中70%以上的流浪动物长期处于饥饿状态。严寒、酷暑、疾病与意外，让它们的平均寿命不足3年（仅为家养宠物的1/5）。
+                </p>
 
-              <p>
-                更令人痛心的是：为觅食，流浪动物们经常翻找垃圾导致中毒、误伤，被人类驱赶；经常是吃不饱饭，还要躲躲藏藏。因为未做绝育，他们只能不停繁衍，恶略的环境中生存机会更少，频繁的生育让小动物身体越来越差，未绝育的动物5年内可繁衍出4300只后代，加剧生存资源争夺。
-              </p>
+                <p>
+                  更令人痛心的是：为觅食，流浪动物们经常翻找垃圾导致中毒、误伤，被人类驱赶；经常是吃不饱饭，还要躲躲藏藏。因为未做绝育，他们只能不停繁衍，恶略的环境中生存机会更少，频繁的生育让小动物身体越来越差，未绝育的动物5年内可繁衍出4300只后代，加剧生存资源争夺。
+                </p>
+                <img src="/image/dog3.jpg" alt="流浪动物救助项目" />
 
-              <p>
-                流浪动物的增加也让他们生存环境越来越差，能捡到的食物越来越少，虽然民间有很多动物救助站，但因为流浪动物数量实在太多，许多救助站都在超负荷运转，60%以上因资金短缺面临断粮危机。
-              </p>
+                <p>
+                  流浪动物的增加也让他们生存环境越来越差，能捡到的食物越来越少，虽然民间有很多动物救助站，但因为流浪动物数量实在太多，许多救助站都在超负荷运转，60%以上因资金短缺面临断粮危机。
+                </p>
 
-              <p>
-                虽然有很多爱心人士碰到流浪动物会投喂食物，但是这种偶尔投喂的方式只能让流浪动物偶尔吃上饭，没有人类帮助的时候他们依然要去跟同伴挣抢食物，甚至因为争抢而撕咬受伤，如果没有科学投喂和治理，只会让流浪动物的生存环境越来越差，因为扰民甚至会遭受到人们的驱赶和捕杀。
-              </p>
+                <p>
+                  虽然有很多爱心人士碰到流浪动物会投喂食物，但是这种偶尔投喂的方式只能让流浪动物偶尔吃上饭，没有人类帮助的时候他们依然要去跟同伴挣抢食物，甚至因为争抢而撕咬受伤，如果没有科学投喂和治理，只会让流浪动物的生存环境越来越差，因为扰民甚至会遭受到人们的驱赶和捕杀。
+                </p>
 
-              <p>
-                特别是北方的冬天，每年都会有许多流浪动物被冻死，吃饱了饭却没抗住寒冷的天气。一些爱心人士不忍动物挨冻，找避风的地方为动物搭建临时住所，却因扰民被投诉，与邻居产生矛盾，但又不忍心放任动物挨饿不管。网上频繁出现，因投喂流浪动物与物业产生矛盾，因流浪动物伤人产生的新闻。如果能给它们一个能遮风挡雨，又能吃饱饭的场所，那所有问题都解决了。
-              </p>
+                <p>
+                  特别是北方的冬天，每年都会有许多流浪动物被冻死，吃饱了饭却没抗住寒冷的天气。一些爱心人士不忍动物挨冻，找避风的地方为动物搭建临时住所，却因扰民被投诉，与邻居产生矛盾，但又不忍心放任动物挨饿不管。网上频繁出现，因投喂流浪动物与物业产生矛盾，因流浪动物伤人产生的新闻。如果能给它们一个能遮风挡雨，又能吃饱饭的场所，那所有问题都解决了。
+                </p>
+                <img src="/image/dog7.jpg" alt="流浪动物救助项目" />
 
-              <p>
-                只有建立流浪动物救助站，让流浪动物有固定的生活场所，不再为一口饭而到处流浪，这样既让流浪动物能吃上饭，也避免了他们扰民的情况，在救助站有了科学喂养也可以限制他们的繁育率，避免更多无辜的生命降生，成为吃不饱饭没有家的流浪动物。
-              </p>
-            </div>
-
-            <h2 class="section-title">项目预算情况说明</h2>
-            <div class="project-text">
-              <p><strong>一：时间：</strong>2025年4月-2027年4月</p>
-              <p><strong>二：受益群体：</strong>流浪动物</p>
-              <p><strong>三：地域：</strong>全国</p>
-              <p><strong>四：执行计划及管理范围</strong></p>
-              <p>
-                1：联合动物救助站救助流浪动物，给流浪动物提供一个温暖的家，为流浪动物提供三餐及简单生活用品。
-              </p>
-              <p>
-                2：进度反馈:定期在平台上公布项目执行进展情况，更新项目最新动态。所有善款支出情况将在平台进行财务披露，接受公众监督。海南世界联合公益基金会将为项目捐赠人开具捐赠收据，需要捐赠收据的爱心用户须将以下信息（捐赠人姓名、开票抬头、捐赠时间、金额、捐赠截图、电话、地址）等信息发送至邮箱ngo@worldunited.org.cn，联系电话400-999-2049。基金会将提供电子发票发送至申请人（捐赠人）邮箱，感恩您的信任和理解。
-              </p>
-            </div>
-
-            <div class="budget-container">
-              <div class="budget-card">
-                <h3>猫狗粮草</h3>
-                <div class="budget-detail">
-                  <span class="amount">¥960,000</span>
-                  <span>8元/斤 × 120,000斤</span>
-                </div>
-                <p class="description">
-                  为10个救助站每月提供5000斤粮草，持续24个月
+                <p>
+                  只有建立流浪动物救助站，让流浪动物有固定的生活场所，不再为一口饭而到处流浪，这样既让流浪动物能吃上饭，也避免了他们扰民的情况，在救助站有了科学喂养也可以限制他们的繁育率，避免更多无辜的生命降生，成为吃不饱饭没有家的流浪动物。
                 </p>
               </div>
 
-              <div class="budget-card">
-                <h3>沐浴露</h3>
-                <div class="budget-detail">
-                  <span class="amount">¥96,000</span>
-                  <span>40元/瓶 × 2,400瓶</span>
-                </div>
-                <p class="description">每个救助站每月10瓶，用于动物日常清洁</p>
+              <h2 class="section-title">项目预算情况说明</h2>
+              <div class="project-text">
+                <p><strong>一：时间：</strong>2025年4月-2027年4月</p>
+                <p><strong>二：受益群体：</strong>流浪动物</p>
+                <p><strong>三：地域：</strong>全国</p>
+                <p><strong>四：执行计划及管理范围</strong></p>
+                <p>
+                  1：联合动物救助站救助流浪动物，给流浪动物提供一个温暖的家，为流浪动物提供三餐及简单生活用品。
+                </p>
+                <p>
+                  2：进度反馈:定期在平台上公布项目执行进展情况，更新项目最新动态。所有善款支出情况将在平台进行财务披露，接受公众监督。海南世界联合公益基金会将为项目捐赠人开具捐赠收据，需要捐赠收据的爱心用户须将以下信息（捐赠人姓名、开票抬头、捐赠时间、金额、捐赠截图、电话、地址）等信息发送至邮箱ngo@worldunited.org.cn，联系电话400-999-2049。基金会将提供电子发票发送至申请人（捐赠人）邮箱，感恩您的信任和理解。
+                </p>
               </div>
 
-              <div class="budget-card">
-                <h3>除臭剂</h3>
-                <div class="budget-detail">
-                  <span class="amount">¥60,000</span>
-                  <span>25元/瓶 × 2,400瓶</span>
+              <div class="budget-container">
+                <div class="budget-card">
+                  <h3>猫狗粮草</h3>
+                  <div class="budget-detail">
+                    <span class="amount">¥960,000</span>
+                    <span>8元/斤 × 120,000斤</span>
+                  </div>
+                  <p class="description">
+                    为10个救助站每月提供5000斤粮草，持续24个月
+                  </p>
                 </div>
-                <p class="description">每个救助站每月10瓶，保持环境卫生</p>
+
+                <div class="budget-card">
+                  <h3>沐浴露</h3>
+                  <div class="budget-detail">
+                    <span class="amount">¥96,000</span>
+                    <span>40元/瓶 × 2,400瓶</span>
+                  </div>
+                  <p class="description">
+                    每个救助站每月10瓶，用于动物日常清洁
+                  </p>
+                </div>
+
+                <div class="budget-card">
+                  <h3>除臭剂</h3>
+                  <div class="budget-detail">
+                    <span class="amount">¥60,000</span>
+                    <span>25元/瓶 × 2,400瓶</span>
+                  </div>
+                  <p class="description">每个救助站每月10瓶，保持环境卫生</p>
+                </div>
+
+                <div class="budget-card">
+                  <h3>公募机构管理费</h3>
+                  <div class="budget-detail">
+                    <span class="amount">¥124,000</span>
+                  </div>
+                  <p class="description">筹款金额的10%，用于机构日常运营</p>
+                </div>
+
+                <div class="budget-total">
+                  <span>项目总预算</span>
+                  <span class="total-amount">¥1,240,000</span>
+                </div>
               </div>
 
-              <div class="budget-card">
-                <h3>公募机构管理费</h3>
-                <div class="budget-detail">
-                  <span class="amount">¥124,000</span>
-                </div>
-                <p class="description">筹款金额的10%，用于机构日常运营</p>
-              </div>
-
-              <div class="budget-total">
-                <span>项目总预算</span>
-                <span class="total-amount">¥1,240,000</span>
+              <div class="org-info">
+                <h3 class="section-title">项目信息</h3>
+                <p><strong>海南世界联合公益基金会</strong></p>
+                <p>备案编号：募捐方案备案编号：53460000082531517GA23005</p>
+                <p>收款机构：海南世界联合公益基金会</p>
+                <p>执行机构：海南世界联合公益基金会</p>
+                <p>立项时间：2025年4月22日</p>
+                <p>截至时间：2027年4月22日</p>
               </div>
             </div>
-
-            <div class="org-info">
-              <h3 class="section-title">项目信息</h3>
-              <p><strong>海南世界联合公益基金会</strong></p>
-              <p>备案编号：募捐方案备案编号：53460000082531517GA23005</p>
-              <p>收款机构：海南世界联合公益基金会</p>
-              <p>执行机构：海南世界联合公益基金会</p>
-              <p>立项时间：2025年4月22日</p>
-              <p>截至时间：2027年4月22日</p>
+          </div>
+          <div id="updates" class="tab-pane">
+            <div class="update-item">
+                <div class="update-date">2025-06-20</div>
+                <div class="update-title">志愿者培训会</div>
+                <div class="update-content">为提高救助站的管理水平，我们举办了线上志愿者培训会，内容包括流浪动物护理、疾病预防等知识。</div>
+                <div class="update-images">
+                    <img src="/api/placeholder/230/130" alt="志愿者培训会">
+                </div>
+            </div>
+            
+            <div class="update-item">
+                <div class="update-date">2025-06-05</div>
+                <div class="update-title">救助站探访活动</div>
+                <div class="update-content">项目组成员走访了北京地区的3家救助站，了解物资使用情况，救助站反映物资质量良好，已显著改善流浪动物生活条件。</div>
+                <div class="update-images">
+                    <img src="/api/placeholder/230/130" alt="救助站探访1">
+                    <img src="/api/placeholder/230/130" alt="救助站探访2">
+                </div>
+            </div>
+            
+            <div class="update-item">
+                <div class="update-date">2025-05-15</div>
+                <div class="update-title">首批物资发放完成</div>
+                <div class="update-content">首批包含猫粮、狗粮共计5000斤，沐浴露100瓶，除臭剂100瓶的物资已全部发放到各救助站。</div>
+                <div class="update-images">
+                    <img src="/api/placeholder/230/130" alt="物资1">
+                    <img src="/api/placeholder/230/130" alt="物资2">
+                    <img src="/api/placeholder/230/130" alt="物资3">
+                </div>
+            </div>
+            
+            <div class="update-item">
+                <div class="update-date">2025-05-01</div>
+                <div class="update-title">项目正式启动</div>
+                <div class="update-content">流浪动物救助项目于今日正式启动，首批10个救助站已确定合作关系。</div>
+                <div class="update-images">
+                    <img src="/api/placeholder/230/130" alt="项目启动">
+                </div>
+            </div>
+        </div>
+        
+        <div id="donors" class="tab-pane">
+            <div class="donor-list">
+                <div class="donor-item">
+                    <div class="donor-info">
+                        <div class="donor-avatar">周</div>
+                        <div class="donor-details">
+                            <div class="donor-name">周*强</div>
+                            <div class="donor-date">2025-05-16</div>
+                            <div class="donor-message">帮助那些无法发声的朋友</div>
+                        </div>
+                    </div>
+                    <div class="donor-amount">¥2000</div>
+                </div>
+                
+                <div class="donor-item">
+                    <div class="donor-info">
+                        <div class="donor-avatar">何</div>
+                        <div class="donor-details">
+                            <div class="donor-name">何*刚</div>
+                            <div class="donor-date">2025-05-09</div>
+                            <div class="donor-message">愿世界对所有生命都温柔以待</div>
+                        </div>
+                    </div>
+                    <div class="donor-amount">¥1500</div>
+                </div>
+                
+                <div class="donor-item">
+                    <div class="donor-info">
+                        <div class="donor-avatar">刘</div>
+                        <div class="donor-details">
+                            <div class="donor-name">刘*军</div>
+                            <div class="donor-date">2025-05-04</div>
+                            <div class="donor-message">帮助那些无法发声的朋友</div>
+                        </div>
+                    </div>
+                    <div class="donor-amount">¥1000</div>
+                </div>
+                
+                <div class="donor-item">
+                    <div class="donor-info">
+                        <div class="donor-avatar">郭</div>
+                        <div class="donor-details">
+                            <div class="donor-name">郭*芳</div>
+                            <div class="donor-date">2025-04-21</div>
+                            <div class="donor-message">愿世界对所有生命都温柔以待</div>
+                        </div>
+                    </div>
+                    <div class="donor-amount">¥900</div>
+                </div>
+                
+                <div class="donor-item">
+                    <div class="donor-info">
+                        <div class="donor-avatar">吴</div>
+                        <div class="donor-details">
+                            <div class="donor-name">吴*婷</div>
+                            <div class="donor-date">2025-05-02</div>
+                            <div class="donor-message">善待动物，善待生命</div>
+                        </div>
+                    </div>
+                    <div class="donor-amount">¥800</div>
+                </div>
+                
+                <div class="donor-item">
+                    <div class="donor-info">
+                        <div class="donor-avatar">梁</div>
+                        <div class="donor-details">
+                            <div class="donor-name">梁*辉</div>
+                            <div class="donor-date">2025-05-08</div>
+                            <div class="donor-message">支持救助站的工作，你们辛苦了</div>
+                        </div>
+                    </div>
+                    <div class="donor-amount">¥750</div>
+                </div>
+                
+                <div class="donor-item">
+                    <div class="donor-info">
+                        <div class="donor-avatar">朱</div>
+                        <div class="donor-details">
+                            <div class="donor-name">朱*云</div>
+                            <div class="donor-date">2025-05-01</div>
+                            <div class="donor-message">祝福所有小动物健康快乐</div>
+                        </div>
+                    </div>
+                    <div class="donor-amount">¥600</div>
+                </div>
+                
+                <div class="donor-item">
+                    <div class="donor-info">
+                        <div class="donor-avatar">王</div>
+                        <div class="donor-details">
+                            <div class="donor-name">王*芳</div>
+                            <div class="donor-date">2025-05-17</div>
+                        </div>
+                    </div>
+                    <div class="donor-amount">¥500</div>
+                </div>
+                
+                <div class="donor-item">
+                    <div class="donor-info">
+                        <div class="donor-avatar">胡</div>
+                        <div class="donor-details">
+                            <div class="donor-name">胡*杰</div>
+                            <div class="donor-date">2025-04-14</div>
+                            <div class="donor-message">每一个生命都值得尊重</div>
+                        </div>
+                    </div>
+                    <div class="donor-amount">¥450</div>
+                </div>
+                
+                <div class="donor-item">
+                    <div class="donor-info">
+                        <div class="donor-avatar">马</div>
+                        <div class="donor-details">
+                            <div class="donor-name">马*鹏</div>
+                            <div class="donor-date">2025-05-22</div>
+                        </div>
+                    </div>
+                    <div class="donor-amount">¥350</div>
+                </div>
             </div>
           </div>
         </div>
@@ -596,39 +848,90 @@
     </div>
 
     <script>
-      // 金额选择功能
+      // 金额选择功能 - 修复版
       document.querySelectorAll(".my-price-item").forEach((item) => {
         item.addEventListener("click", function () {
           document.querySelectorAll(".my-price-item").forEach((i) => {
             i.classList.remove("checked");
           });
           this.classList.add("checked");
-          document.querySelector('input[name="WIDtotal_fee"]').value =
-            this.textContent.trim().replace("元", "");
+          
+          // 获取选中的金额
+          let selectedAmount = this.textContent.trim();
+          
+          // 如果选择的是"随缘爱心"，生成50-10000之间的随机金额
+          if (selectedAmount === "随缘爱心") {
+            selectedAmount = Math.floor(Math.random() * (10000 - 50 + 1) + 50);
+          } else {
+            // 去掉"元"字并转换为数字
+            selectedAmount = parseInt(selectedAmount.replace("元", "").trim());
+          }
+          
+          // 更新隐藏的input值
+          document.querySelector('input[name="WIDtotal_fee"]').value = selectedAmount;
+          
+          // 更新默认金额按钮的显示 - 这是修复的关键
+          document.querySelector('.donate-amount').textContent = selectedAmount;
         });
       });
 
-            // 默认金额按钮点击事件
-        document.querySelector('.default-donate-btn').addEventListener('click', function() {
-            const currentAmount = parseInt(this.querySelector('.donate-amount').textContent);
-            const newAmount = currentAmount === 50 ? 100 : currentAmount === 100 ? 200 : 50;
-            this.querySelector('.donate-amount').textContent = newAmount;
+      // 默认金额按钮点击事件 - 这个功能已经不需要了，因为金额会自动同步
+      document
+        .querySelector(".default-donate-btn")
+        .addEventListener("click", function () {
+          const amount = document.querySelector(".donate-amount").textContent;
+          alert("即将跳转支付，金额：" + amount + "元");
+          // 实际支付跳转代码
+        });
+
+      // 微信捐赠按钮点击事件
+      document
+        .querySelector(".wechat-donate-btn")
+        .addEventListener("click", function () {
+          const amount = document.querySelector(".donate-amount").textContent;
+          alert("即将跳转微信支付，金额：" + amount + "元");
+          // 实际微信支付跳转代码
+        });
+
+      // 支付宝捐赠按钮点击事件
+      document
+        .querySelector(".alipay-donate-btn")
+        .addEventListener("click", function () {
+          const amount = document.querySelector(".donate-amount").textContent;
+          alert("即将跳转支付宝支付，金额：" + amount + "元");
+          // 实际支付宝支付跳转代码
+        });
+         
+      // 标签切换功能
+      function showTab(tabId) {
+        // 隐藏所有标签内容
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+          pane.classList.remove('active');
         });
         
-        // 微信捐赠按钮点击事件
-        document.querySelector('.wechat-donate-btn').addEventListener('click', function() {
-            const amount = document.querySelector('.donate-amount').textContent;
-            alert('即将跳转微信支付，金额：' + amount + '元');
-            // 实际微信支付跳转代码
+        // 取消所有标签激活状态
+        document.querySelectorAll('.tab').forEach(tab => {
+          tab.classList.remove('active');
         });
         
-        // 支付宝捐赠按钮点击事件
-        document.querySelector('.alipay-donate-btn').addEventListener('click', function() {
-            const amount = document.querySelector('.donate-amount').textContent;
-            alert('即将跳转支付宝支付，金额：' + amount + '元');
-            // 实际支付宝支付跳转代码
-        });
- 
+        // 显示选中的标签内容
+        document.getElementById(tabId).classList.add('active');
+        
+        // 设置选中标签的激活状态
+        const tabs = document.querySelectorAll('.tab');
+        if (tabId === 'intro') {
+          tabs[0].classList.add('active');
+        } else if (tabId === 'updates') {
+          tabs[1].classList.add('active');
+        } else if (tabId === 'donors') {
+          tabs[2].classList.add('active');
+        }
+      }
+
+      // 页面加载时默认显示项目介绍标签
+      window.onload = function() {
+        showTab('intro');
+      };
     </script>
   </body>
 </html>
