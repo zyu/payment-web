@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
 // 不需要认证的路径
-const publicPaths = ['/login', '/api/login'];
+const publicPaths = ['/login', '/api/login','/ad','/alipay-icon.png','/favicon.ico','/wechat-icon.png', '/_next/static', '/_next/image'];
 
 // JWT密钥（与login route中保持一致）
 const JWT_SECRET = new TextEncoder().encode('your-secret-key');
