@@ -7,6 +7,7 @@ const publicPaths = [
   "/login",
   "/api/login",
   "/ad",
+  "/js/payment.js",
   "/alipay-icon.png",
   "/image/dog3.jpg",
   "/image/dog5.jpg",

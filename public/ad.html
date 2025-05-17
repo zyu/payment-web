@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>流浪动物救助项目 - 海南世界联合公益基金会</title>
+    <script src="/js/payment.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
       * {
         margin: 0;
@@ -415,7 +417,7 @@
         font-weight: bold;
         margin: 0 2px;
       }
-      
+
       /* 执行动态样式 */
       .update-item {
         padding: 15px 0;
@@ -446,7 +448,7 @@
         object-fit: cover;
         border-radius: 4px;
       }
-      
+
       /* 爱心榜样式 */
       .donor-item {
         display: flex;
@@ -520,16 +522,21 @@
       </div>
 
       <!-- 新增的支付模块 -->
+
+      <!-- 支付盒子部分 - 已集成设备检测和多支付方式 -->
       <div class="pay-box">
         <div class="form-top">
           <h3>支付捐款</h3>
+          <!-- 隐藏的表单字段 - 存储金额 -->
           <input
             type="text"
             name="WIDtotal_fee"
+            value="50"
             readonly="readonly"
             style="display: none"
           />
         </div>
+
         <div class="form-body">
           <div class="price-wrapper">
             <button type="button" class="my-price-item">28 元</button>
@@ -543,17 +550,20 @@
             <button type="button" class="my-price-item">随缘爱心</button>
           </div>
         </div>
+
+        <!-- 隐藏的订单ID字段 -->
         <input
           size="1"
           name="WIDout_trade_no"
-          value="20250510234643674"
+          value="ORDER_20250516123456_abc123de"
           style="display: none"
         />
+
         <div class="ppd-pay">
           <div class="donate-options">
             <!-- 默认金额按钮 -->
             <button type="button" class="default-donate-btn">
-              <span class="donate-amount">50</span>元
+              捐赠 <span class="donate-amount">50</span> 元
             </button>
 
             <!-- 微信捐赠按钮 -->
@@ -570,7 +580,6 @@
           </div>
         </div>
       </div>
-
       <div class="tab-section">
         <div class="tabs">
           <div class="tab active" onclick="showTab('intro')">项目介绍</div>
@@ -683,164 +692,174 @@
           </div>
           <div id="updates" class="tab-pane">
             <div class="update-item">
-                <div class="update-date">2025-06-20</div>
-                <div class="update-title">志愿者培训会</div>
-                <div class="update-content">为提高救助站的管理水平，我们举办了线上志愿者培训会，内容包括流浪动物护理、疾病预防等知识。</div>
-                <div class="update-images">
-                    <img src="/api/placeholder/230/130" alt="志愿者培训会">
-                </div>
+              <div class="update-date">2025-06-20</div>
+              <div class="update-title">志愿者培训会</div>
+              <div class="update-content">
+                为提高救助站的管理水平，我们举办了线上志愿者培训会，内容包括流浪动物护理、疾病预防等知识。
+              </div>
+              <div class="update-images">
+                <img src="/api/placeholder/230/130" alt="志愿者培训会" />
+              </div>
             </div>
-            
+
             <div class="update-item">
-                <div class="update-date">2025-06-05</div>
-                <div class="update-title">救助站探访活动</div>
-                <div class="update-content">项目组成员走访了北京地区的3家救助站，了解物资使用情况，救助站反映物资质量良好，已显著改善流浪动物生活条件。</div>
-                <div class="update-images">
-                    <img src="/api/placeholder/230/130" alt="救助站探访1">
-                    <img src="/api/placeholder/230/130" alt="救助站探访2">
-                </div>
+              <div class="update-date">2025-06-05</div>
+              <div class="update-title">救助站探访活动</div>
+              <div class="update-content">
+                项目组成员走访了北京地区的3家救助站，了解物资使用情况，救助站反映物资质量良好，已显著改善流浪动物生活条件。
+              </div>
+              <div class="update-images">
+                <img src="/api/placeholder/230/130" alt="救助站探访1" />
+                <img src="/api/placeholder/230/130" alt="救助站探访2" />
+              </div>
             </div>
-            
+
             <div class="update-item">
-                <div class="update-date">2025-05-15</div>
-                <div class="update-title">首批物资发放完成</div>
-                <div class="update-content">首批包含猫粮、狗粮共计5000斤，沐浴露100瓶，除臭剂100瓶的物资已全部发放到各救助站。</div>
-                <div class="update-images">
-                    <img src="/api/placeholder/230/130" alt="物资1">
-                    <img src="/api/placeholder/230/130" alt="物资2">
-                    <img src="/api/placeholder/230/130" alt="物资3">
-                </div>
+              <div class="update-date">2025-05-15</div>
+              <div class="update-title">首批物资发放完成</div>
+              <div class="update-content">
+                首批包含猫粮、狗粮共计5000斤，沐浴露100瓶，除臭剂100瓶的物资已全部发放到各救助站。
+              </div>
+              <div class="update-images">
+                <img src="/api/placeholder/230/130" alt="物资1" />
+                <img src="/api/placeholder/230/130" alt="物资2" />
+                <img src="/api/placeholder/230/130" alt="物资3" />
+              </div>
             </div>
-            
+
             <div class="update-item">
-                <div class="update-date">2025-05-01</div>
-                <div class="update-title">项目正式启动</div>
-                <div class="update-content">流浪动物救助项目于今日正式启动，首批10个救助站已确定合作关系。</div>
-                <div class="update-images">
-                    <img src="/api/placeholder/230/130" alt="项目启动">
-                </div>
+              <div class="update-date">2025-05-01</div>
+              <div class="update-title">项目正式启动</div>
+              <div class="update-content">
+                流浪动物救助项目于今日正式启动，首批10个救助站已确定合作关系。
+              </div>
+              <div class="update-images">
+                <img src="/api/placeholder/230/130" alt="项目启动" />
+              </div>
             </div>
-        </div>
-        
-        <div id="donors" class="tab-pane">
+          </div>
+
+          <div id="donors" class="tab-pane">
             <div class="donor-list">
-                <div class="donor-item">
-                    <div class="donor-info">
-                        <div class="donor-avatar">周</div>
-                        <div class="donor-details">
-                            <div class="donor-name">周*强</div>
-                            <div class="donor-date">2025-05-16</div>
-                            <div class="donor-message">帮助那些无法发声的朋友</div>
-                        </div>
-                    </div>
-                    <div class="donor-amount">¥2000</div>
+              <div class="donor-item">
+                <div class="donor-info">
+                  <div class="donor-avatar">周</div>
+                  <div class="donor-details">
+                    <div class="donor-name">周*强</div>
+                    <div class="donor-date">2025-05-16</div>
+                    <div class="donor-message">帮助那些无法发声的朋友</div>
+                  </div>
                 </div>
-                
-                <div class="donor-item">
-                    <div class="donor-info">
-                        <div class="donor-avatar">何</div>
-                        <div class="donor-details">
-                            <div class="donor-name">何*刚</div>
-                            <div class="donor-date">2025-05-09</div>
-                            <div class="donor-message">愿世界对所有生命都温柔以待</div>
-                        </div>
-                    </div>
-                    <div class="donor-amount">¥1500</div>
+                <div class="donor-amount">¥2000</div>
+              </div>
+
+              <div class="donor-item">
+                <div class="donor-info">
+                  <div class="donor-avatar">何</div>
+                  <div class="donor-details">
+                    <div class="donor-name">何*刚</div>
+                    <div class="donor-date">2025-05-09</div>
+                    <div class="donor-message">愿世界对所有生命都温柔以待</div>
+                  </div>
                 </div>
-                
-                <div class="donor-item">
-                    <div class="donor-info">
-                        <div class="donor-avatar">刘</div>
-                        <div class="donor-details">
-                            <div class="donor-name">刘*军</div>
-                            <div class="donor-date">2025-05-04</div>
-                            <div class="donor-message">帮助那些无法发声的朋友</div>
-                        </div>
-                    </div>
-                    <div class="donor-amount">¥1000</div>
+                <div class="donor-amount">¥1500</div>
+              </div>
+
+              <div class="donor-item">
+                <div class="donor-info">
+                  <div class="donor-avatar">刘</div>
+                  <div class="donor-details">
+                    <div class="donor-name">刘*军</div>
+                    <div class="donor-date">2025-05-04</div>
+                    <div class="donor-message">帮助那些无法发声的朋友</div>
+                  </div>
                 </div>
-                
-                <div class="donor-item">
-                    <div class="donor-info">
-                        <div class="donor-avatar">郭</div>
-                        <div class="donor-details">
-                            <div class="donor-name">郭*芳</div>
-                            <div class="donor-date">2025-04-21</div>
-                            <div class="donor-message">愿世界对所有生命都温柔以待</div>
-                        </div>
-                    </div>
-                    <div class="donor-amount">¥900</div>
+                <div class="donor-amount">¥1000</div>
+              </div>
+
+              <div class="donor-item">
+                <div class="donor-info">
+                  <div class="donor-avatar">郭</div>
+                  <div class="donor-details">
+                    <div class="donor-name">郭*芳</div>
+                    <div class="donor-date">2025-04-21</div>
+                    <div class="donor-message">愿世界对所有生命都温柔以待</div>
+                  </div>
                 </div>
-                
-                <div class="donor-item">
-                    <div class="donor-info">
-                        <div class="donor-avatar">吴</div>
-                        <div class="donor-details">
-                            <div class="donor-name">吴*婷</div>
-                            <div class="donor-date">2025-05-02</div>
-                            <div class="donor-message">善待动物，善待生命</div>
-                        </div>
-                    </div>
-                    <div class="donor-amount">¥800</div>
+                <div class="donor-amount">¥900</div>
+              </div>
+
+              <div class="donor-item">
+                <div class="donor-info">
+                  <div class="donor-avatar">吴</div>
+                  <div class="donor-details">
+                    <div class="donor-name">吴*婷</div>
+                    <div class="donor-date">2025-05-02</div>
+                    <div class="donor-message">善待动物，善待生命</div>
+                  </div>
                 </div>
-                
-                <div class="donor-item">
-                    <div class="donor-info">
-                        <div class="donor-avatar">梁</div>
-                        <div class="donor-details">
-                            <div class="donor-name">梁*辉</div>
-                            <div class="donor-date">2025-05-08</div>
-                            <div class="donor-message">支持救助站的工作，你们辛苦了</div>
-                        </div>
+                <div class="donor-amount">¥800</div>
+              </div>
+
+              <div class="donor-item">
+                <div class="donor-info">
+                  <div class="donor-avatar">梁</div>
+                  <div class="donor-details">
+                    <div class="donor-name">梁*辉</div>
+                    <div class="donor-date">2025-05-08</div>
+                    <div class="donor-message">
+                      支持救助站的工作，你们辛苦了
                     </div>
-                    <div class="donor-amount">¥750</div>
+                  </div>
                 </div>
-                
-                <div class="donor-item">
-                    <div class="donor-info">
-                        <div class="donor-avatar">朱</div>
-                        <div class="donor-details">
-                            <div class="donor-name">朱*云</div>
-                            <div class="donor-date">2025-05-01</div>
-                            <div class="donor-message">祝福所有小动物健康快乐</div>
-                        </div>
-                    </div>
-                    <div class="donor-amount">¥600</div>
+                <div class="donor-amount">¥750</div>
+              </div>
+
+              <div class="donor-item">
+                <div class="donor-info">
+                  <div class="donor-avatar">朱</div>
+                  <div class="donor-details">
+                    <div class="donor-name">朱*云</div>
+                    <div class="donor-date">2025-05-01</div>
+                    <div class="donor-message">祝福所有小动物健康快乐</div>
+                  </div>
                 </div>
-                
-                <div class="donor-item">
-                    <div class="donor-info">
-                        <div class="donor-avatar">王</div>
-                        <div class="donor-details">
-                            <div class="donor-name">王*芳</div>
-                            <div class="donor-date">2025-05-17</div>
-                        </div>
-                    </div>
-                    <div class="donor-amount">¥500</div>
+                <div class="donor-amount">¥600</div>
+              </div>
+
+              <div class="donor-item">
+                <div class="donor-info">
+                  <div class="donor-avatar">王</div>
+                  <div class="donor-details">
+                    <div class="donor-name">王*芳</div>
+                    <div class="donor-date">2025-05-17</div>
+                  </div>
                 </div>
-                
-                <div class="donor-item">
-                    <div class="donor-info">
-                        <div class="donor-avatar">胡</div>
-                        <div class="donor-details">
-                            <div class="donor-name">胡*杰</div>
-                            <div class="donor-date">2025-04-14</div>
-                            <div class="donor-message">每一个生命都值得尊重</div>
-                        </div>
-                    </div>
-                    <div class="donor-amount">¥450</div>
+                <div class="donor-amount">¥500</div>
+              </div>
+
+              <div class="donor-item">
+                <div class="donor-info">
+                  <div class="donor-avatar">胡</div>
+                  <div class="donor-details">
+                    <div class="donor-name">胡*杰</div>
+                    <div class="donor-date">2025-04-14</div>
+                    <div class="donor-message">每一个生命都值得尊重</div>
+                  </div>
                 </div>
-                
-                <div class="donor-item">
-                    <div class="donor-info">
-                        <div class="donor-avatar">马</div>
-                        <div class="donor-details">
-                            <div class="donor-name">马*鹏</div>
-                            <div class="donor-date">2025-05-22</div>
-                        </div>
-                    </div>
-                    <div class="donor-amount">¥350</div>
+                <div class="donor-amount">¥450</div>
+              </div>
+
+              <div class="donor-item">
+                <div class="donor-info">
+                  <div class="donor-avatar">马</div>
+                  <div class="donor-details">
+                    <div class="donor-name">马*鹏</div>
+                    <div class="donor-date">2025-05-22</div>
+                  </div>
                 </div>
+                <div class="donor-amount">¥350</div>
+              </div>
             </div>
           </div>
         </div>
@@ -848,89 +867,35 @@
     </div>
 
     <script>
-      // 金额选择功能 - 修复版
-      document.querySelectorAll(".my-price-item").forEach((item) => {
-        item.addEventListener("click", function () {
-          document.querySelectorAll(".my-price-item").forEach((i) => {
-            i.classList.remove("checked");
-          });
-          this.classList.add("checked");
-          
-          // 获取选中的金额
-          let selectedAmount = this.textContent.trim();
-          
-          // 如果选择的是"随缘爱心"，生成50-10000之间的随机金额
-          if (selectedAmount === "随缘爱心") {
-            selectedAmount = Math.floor(Math.random() * (10000 - 50 + 1) + 50);
-          } else {
-            // 去掉"元"字并转换为数字
-            selectedAmount = parseInt(selectedAmount.replace("元", "").trim());
-          }
-          
-          // 更新隐藏的input值
-          document.querySelector('input[name="WIDtotal_fee"]').value = selectedAmount;
-          
-          // 更新默认金额按钮的显示 - 这是修复的关键
-          document.querySelector('.donate-amount').textContent = selectedAmount;
-        });
-      });
-
-      // 默认金额按钮点击事件 - 这个功能已经不需要了，因为金额会自动同步
-      document
-        .querySelector(".default-donate-btn")
-        .addEventListener("click", function () {
-          const amount = document.querySelector(".donate-amount").textContent;
-          alert("即将跳转支付，金额：" + amount + "元");
-          // 实际支付跳转代码
-        });
-
-      // 微信捐赠按钮点击事件
-      document
-        .querySelector(".wechat-donate-btn")
-        .addEventListener("click", function () {
-          const amount = document.querySelector(".donate-amount").textContent;
-          alert("即将跳转微信支付，金额：" + amount + "元");
-          // 实际微信支付跳转代码
-        });
-
-      // 支付宝捐赠按钮点击事件
-      document
-        .querySelector(".alipay-donate-btn")
-        .addEventListener("click", function () {
-          const amount = document.querySelector(".donate-amount").textContent;
-          alert("即将跳转支付宝支付，金额：" + amount + "元");
-          // 实际支付宝支付跳转代码
-        });
-         
       // 标签切换功能
       function showTab(tabId) {
         // 隐藏所有标签内容
-        document.querySelectorAll('.tab-pane').forEach(pane => {
-          pane.classList.remove('active');
+        document.querySelectorAll(".tab-pane").forEach((pane) => {
+          pane.classList.remove("active");
         });
-        
+
         // 取消所有标签激活状态
-        document.querySelectorAll('.tab').forEach(tab => {
-          tab.classList.remove('active');
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.classList.remove("active");
         });
-        
+
         // 显示选中的标签内容
-        document.getElementById(tabId).classList.add('active');
-        
+        document.getElementById(tabId).classList.add("active");
+
         // 设置选中标签的激活状态
-        const tabs = document.querySelectorAll('.tab');
-        if (tabId === 'intro') {
-          tabs[0].classList.add('active');
-        } else if (tabId === 'updates') {
-          tabs[1].classList.add('active');
-        } else if (tabId === 'donors') {
-          tabs[2].classList.add('active');
+        const tabs = document.querySelectorAll(".tab");
+        if (tabId === "intro") {
+          tabs[0].classList.add("active");
+        } else if (tabId === "updates") {
+          tabs[1].classList.add("active");
+        } else if (tabId === "donors") {
+          tabs[2].classList.add("active");
         }
       }
 
       // 页面加载时默认显示项目介绍标签
-      window.onload = function() {
-        showTab('intro');
+      window.onload = function () {
+        showTab("intro");
       };
     </script>
   </body>

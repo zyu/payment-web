@@ -1,10 +1,12 @@
+// app/api/refunds/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 
 // JWT密钥（与login route中保持一致）
 const JWT_SECRET = new TextEncoder().encode('your-secret-key');
 
-// 用户认证函数
+// 复用相同的用户认证函数
 async function getUserAuth(request: NextRequest) {
   // 从 cookie 获取认证 token
   const token = request.cookies.get('auth-token')?.value;
@@ -27,11 +29,8 @@ async function getUserAuth(request: NextRequest) {
   }
 }
 
-// 创建订单退款API
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { orderId: string } }
-) {
+// 创建退款申请API
+export async function POST(request: NextRequest) {
   try {
     // 验证用户认证
     const auth = await getUserAuth(request);
@@ -39,13 +38,11 @@ export async function POST(
       return NextResponse.json({ error: "未授权" }, { status: 401 });
     }
 
-    const orderId = params.orderId;
-    
     // 解析请求体
     const refundData = await request.json();
 
     // 调用后端API
-    const backendApiUrl = `${process.env.BACKEND_API_URL}/refund/${orderId}`;
+    const backendApiUrl = `${process.env.BACKEND_API_URL}/refunds`;
     const response = await fetch(backendApiUrl, {
       method: "POST",
       headers: {
@@ -63,52 +60,10 @@ export async function POST(
       );
     }
 
-    const refundResult = await response.json();
-    return NextResponse.json(refundResult);
+    const createdRefund = await response.json();
+    return NextResponse.json(createdRefund);
   } catch (error) {
     console.error("创建退款申请错误:", error);
-    return NextResponse.json(
-      { error: "服务器内部错误" },
-      { status: 500 }
-    );
-  }
-}
-
-// 查询退款状态API
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { orderId: string } }
-) {
-  try {
-    // 验证用户认证
-    const auth = await getUserAuth(request);
-    if (!auth) {
-      return NextResponse.json({ error: "未授权" }, { status: 401 });
-    }
-
-    const orderId = params.orderId;
-
-    // 调用后端API
-    const backendApiUrl = `${process.env.BACKEND_API_URL}/refund/${orderId}/status`;
-    const response = await fetch(backendApiUrl, {
-      headers: {
-        "Authorization": `Bearer ${auth.token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      return NextResponse.json(
-        { error: errorData.detail || "查询退款状态失败" },
-        { status: response.status }
-      );
-    }
-
-    const refundStatus = await response.json();
-    return NextResponse.json(refundStatus);
-  } catch (error) {
-    console.error("查询退款状态错误:", error);
     return NextResponse.json(
       { error: "服务器内部错误" },
       { status: 500 }

@@ -53,7 +53,7 @@ export interface Order {
 // 订单API服务
 const orderApi = {
   // 获取用户的订单列表
-  async getUserOrders(userId: string, skip: number = 0, limit: number = 3): Promise<Order[]> {
+  async getUserOrders(userId: string, skip: number = 0, limit: number = 20): Promise<Order[]> {
     try {
       const response = await fetch(`/api/orders?skip=${skip}&limit=${limit}`, {
         method: 'GET',
