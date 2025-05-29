@@ -1,19 +1,11 @@
-import type { Metadata } from "next"
-import { OrderDetail } from "@/components/orders/order-detail"
+import OrderDetailPageClient from "./OrderDetailPageClient"
 
-export const metadata: Metadata = {
-  title: "订单详情 - 支付集成管理系统",
-  description: "查看订单详细信息",
+// 添加这个函数到文件顶部
+export function generateStaticParams() {
+  // 为静态导出提供一些预定义的ID
+  return [{ id: "1" }, { id: "2" }, { id: "3" }, { id: "4" }, { id: "5" }]
 }
 
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
-  return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">订单详情</h2>
-        <p className="text-muted-foreground">查看订单详细信息和状态</p>
-      </div>
-      <OrderDetail orderId={params.id} />
-    </div>
-  )
+  return <OrderDetailPageClient orderId={params.id} />
 }

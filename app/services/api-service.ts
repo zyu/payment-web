@@ -1,204 +1,211 @@
 // app/services/api-service.ts
-import { getAuthToken } from "@/lib/auth-utils";
+import { getAuthToken } from "@/lib/auth-utils"
 
-// API基础URL
-const API_BASE_URL =
-  process.env.BACKEND_API_URL || "http://localhost:8000/api";
+// API基础URL - 现在指向您的PHP后端
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
 
 // 订单类型
-export type PaymentType = "wechat" | "alipay";
+export type PaymentMethod = "wechat" | "alipay"
+export type PaymentType = "web" | "h5" | "jsapi" | "native"
 
-export type OrderStatus =
-  | "created"
-  | "pending"
-  | "paid"
-  | "cancelled"
-  | "refund_applying"
-  | "refund_failed"
-  | "refunded_partial"
-  | "refunded"
-  | "failed";
+export type OrderStatus = "pending" | "paid" | "cancelled" | "refunded" | "failed"
 
 export interface Order {
-  order_id: string;
-  amount: number;
-  title: string;
-  description?: string;
-  user_id: string;
-  payment_type: PaymentType;
-  status: OrderStatus;
-  transaction_id?: string;
-  created_at: string;
-  updated_at: string;
-  paid_at?: string;
-  refund_id?: string;
-  refund_amount?: number;
-  refund_reason?: string;
-  refund_status?: string;
-  refund_time?: string;
+  id: string
+  user_id: string
+  amount: number
+  items: OrderItem[]
+  payment_method: PaymentMethod
+  status: OrderStatus
+  created_at: string
+  updated_at: string
 }
 
-export interface WechatPaymentParams {
-  appId: string;
-  timeStamp: string;
-  nonceStr: string;
-  package: string;
-  signType: string;
-  paySign: string;
+export interface OrderItem {
+  name: string
+  quantity: number
+  price: number
 }
 
-export interface AlipayPaymentParams {
-  trade_no: string;
-  form_html: string;
+export interface PaymentParams {
+  payment_type: PaymentType
+  openid?: string
 }
 
 export interface RefundRequest {
-  amount: number;
-  reason: string;
+  order_id: string
+  amount: number
+  reason: string
+}
+
+export interface Refund {
+  id: string
+  order_id: string
+  amount: number
+  reason: string
+  status: string
+  created_at: string
+  refunded_at?: string
+  error_message?: string
 }
 
 // API请求通用函数
 const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
-  const token = getAuthToken();
+  const token = getAuthToken()
 
   const headers = {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
-  };
+  }
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers,
-  });
+  })
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: "请求失败" }));
-    throw new Error(error.detail || `请求失败: ${response.status}`);
+    const error = await response.json().catch(() => ({ message: "请求失败" }))
+    throw new Error(error.message || `请求失败: ${response.status}`)
   }
 
-  return response.json();
-};
+  const res = await response.json()
+  return res.data
+}
+
+// 认证API
+export const authApi = {
+  // 登录
+  async login(credentials: { email: string; password: string }): Promise<{
+    user: any
+    token: string
+  }> {
+    const res =  await apiFetch("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    })
+    return res
+  },
+
+  // 注册
+  async register(userData: { name: string; email: string; password: string }): Promise<{
+    user: any
+    token: string
+  }> {
+    return apiFetch("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(userData),
+    })
+  },
+}
 
 // 订单API服务
 export const orderApi = {
-  // 创建订单
-  async createOrder(orderData: {
-    amount: number;
-    title: string;
-    description?: string;
-    user_id: string;
-    payment_type: PaymentType;
-  }): Promise<Order> {
-    return apiFetch("/orders/", {
-      method: "POST",
-      body: JSON.stringify(orderData),
-    });
+  // 获取订单列表
+  async getOrders(
+    params: {
+      status?: string
+      search?: string
+      sortBy?: string
+      sortOrder?: string
+      page?: number
+      limit?: number
+    } = {},
+  ): Promise<{
+    orders: Order[]
+    pagination: {
+      current_page: number
+      total_pages: number
+      total_items: number
+      per_page: number
+    }
+  }> {
+    const queryParams = new URLSearchParams()
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined) {
+        queryParams.append(key, value.toString())
+      }
+    })
+
+    return apiFetch(`/orders?${queryParams.toString()}`)
   },
 
   // 获取订单详情
   async getOrderById(orderId: string): Promise<Order> {
-    return await apiFetch(`/orders/${orderId}`);
+    return apiFetch(`/orders/${orderId}`)
   },
 
-  // 获取用户订单列表
-  async getUserOrders(
-    userId: string,
-    skip: number = 0,
-    limit: number = 100
-  ): Promise<Order[]> {
-    return apiFetch(`/orders?skip=${skip}&limit=${limit}`);
-  },
-
-  // 发起微信支付
-  async createWechatPayment(
-    orderId: string,
-    openid?: string
-  ): Promise<{ payment_params: WechatPaymentParams }> {
-    const body = openid ? { openid } : {};
-    return apiFetch(`/payment/wechat/pay/${orderId}`, {
+  // 创建订单
+  async createOrder(orderData: {
+    amount: number
+    items: OrderItem[]
+    payment_method: PaymentMethod
+  }): Promise<{ order_id: string }> {
+    return apiFetch("/orders", {
       method: "POST",
-      body: JSON.stringify(body),
-    });
+      body: JSON.stringify(orderData),
+    })
   },
+}
 
-  // 查询微信支付状态
-  async queryWechatPayment(orderId: string): Promise<{
-    order_id: string;
-    transaction_id?: string;
-    status: OrderStatus;
-    paid_at?: string;
-    updated_at: string;
-  }> {
-    return apiFetch(`/payment/wechat/query/${orderId}`);
-  },
-
-  // 发起支付宝支付
-  async createAlipayPayment(
-    orderId: string,
-    returnUrl?: string
-  ): Promise<{ payment_params: AlipayPaymentParams }> {
-    const body = returnUrl ? { return_url: returnUrl } : {};
-    return apiFetch(`/payment/alipay/pay/${orderId}`, {
+// 支付API服务
+export const paymentApi = {
+  // 准备支付
+  async preparePayment(orderId: string, paymentParams: PaymentParams): Promise<any> {
+    return apiFetch(`/payment/prepare/${orderId}`, {
       method: "POST",
-      body: JSON.stringify(body),
-    });
+      body: JSON.stringify(paymentParams),
+    })
   },
 
-  // 获取支付宝表单支付链接
-  getAlipayFormUrl(orderId: string, returnUrl?: string): string {
-    const queryParams = returnUrl
-      ? `?return_url=${encodeURIComponent(returnUrl)}`
-      : "";
-    return `${API_BASE_URL}/payment/alipay/pay/${orderId}/form${queryParams}`;
-  },
-
-  // 查询支付宝支付状态
-  async queryAlipayPayment(orderId: string): Promise<{
-    alipay_query_result: {
-      code: string;
-      msg: string;
-      trade_no?: string;
-      out_trade_no: string;
-      trade_status?: string;
-    };
-    order_status: OrderStatus;
+  // 查询支付状态
+  async getPaymentStatus(orderId: string): Promise<{
+    order_id: string
+    status: OrderStatus
+    transaction_id?: string
+    paid_at?: string
   }> {
-    return apiFetch(`/payment/alipay/query/${orderId}`);
+    return apiFetch(`/payment/status/${orderId}`)
   },
+}
 
+// 退款API服务
+export const refundApi = {
   // 申请退款
-  async createRefund(
-    orderId: string,
-    refundData: RefundRequest
-  ): Promise<{
-    order: {
-      order_id: string;
-      status: OrderStatus;
-      refund_id?: string;
-      refund_amount?: number;
-      refund_status?: string;
-    };
-    result: any;
+  async createRefund(refundData: RefundRequest): Promise<{
+    refund_id: string
+    status: string
   }> {
-    return apiFetch(`/refund/${orderId}`, {
+    return apiFetch("/refunds", {
       method: "POST",
       body: JSON.stringify(refundData),
-    });
+    })
   },
 
-  // 查询退款状态
-  async queryRefundStatus(orderId: string): Promise<{
-    order: {
-      order_id: string;
-      status: OrderStatus;
-      refund_id?: string;
-      refund_amount?: number;
-      refund_status?: string;
-      refund_time?: string;
-    };
-    result: any;
-  }> {
-    return apiFetch(`/refund/${orderId}/status`);
+  // 获取退款详情
+  async getRefundById(refundId: string): Promise<Refund> {
+    return apiFetch(`/refunds/${refundId}`)
   },
-};
+
+  // 获取退款列表
+  async getRefunds(
+    params: {
+      status?: string
+      search?: string
+      page?: number
+      limit?: number
+    } = {},
+  ): Promise<{
+    refunds: Refund[]
+    pagination: any
+  }> {
+    const queryParams = new URLSearchParams()
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined) {
+        queryParams.append(key, value.toString())
+      }
+    })
+
+    return apiFetch(`/refunds?${queryParams.toString()}`)
+  },
+}

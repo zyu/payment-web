@@ -1,270 +1,197 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
-import { ArrowUpDown, Eye, MoreHorizontal, Search } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { PaymentMethodBadge } from "@/components/orders/payment-method-badge"
-import type { Refund, RefundStatus } from "@/lib/types/refund"
-
-// 模拟数据
-const refunds: Refund[] = [
-  {
-    id: "1",
-    orderId: "1",
-    orderNumber: "ORD-001",
-    paymentId: "1",
-    refundId: "RF123456789",
-    amount: 299,
-    originalAmount: 299,
-    reason: "客户不满意",
-    method: "wechat",
-    status: "SUCCESS",
-    createdAt: "2023-05-02 10:30:00",
-    updatedAt: "2023-05-02 10:35:00",
-    completedAt: "2023-05-02 10:35:00",
-  },
-  {
-    id: "2",
-    orderId: "2",
-    orderNumber: "ORD-002",
-    paymentId: "2",
-    amount: 300,
-    originalAmount: 599,
-    reason: "部分退款",
-    method: "alipay",
-    status: "PROCESSING",
-    createdAt: "2023-05-02 11:45:00",
-    updatedAt: "2023-05-02 11:45:00",
-  },
-  {
-    id: "3",
-    orderId: "3",
-    orderNumber: "ORD-003",
-    paymentId: "3",
-    refundId: "RF987654321",
-    amount: 199,
-    originalAmount: 199,
-    reason: "商品缺货",
-    method: "wechat",
-    status: "SUCCESS",
-    createdAt: "2023-05-02 12:20:00",
-    updatedAt: "2023-05-02 12:25:00",
-    completedAt: "2023-05-02 12:25:00",
-  },
-  {
-    id: "4",
-    orderId: "4",
-    orderNumber: "ORD-004",
-    paymentId: "4",
-    amount: 899,
-    originalAmount: 899,
-    reason: "客户取消订单",
-    method: "alipay",
-    status: "FAILED",
-    createdAt: "2023-05-02 13:10:00",
-    updatedAt: "2023-05-02 13:15:00",
-    errorMessage: "退款账户异常",
-  },
-  {
-    id: "5",
-    orderId: "5",
-    orderNumber: "ORD-005",
-    paymentId: "5",
-    amount: 200,
-    originalAmount: 399,
-    reason: "部分退款",
-    method: "wechat",
-    status: "APPLYING",
-    createdAt: "2023-05-02 14:05:00",
-    updatedAt: "2023-05-02 14:05:00",
-  },
-]
-
-function RefundStatusBadge({ status }: { status: RefundStatus }) {
-  switch (status) {
-    case "SUCCESS":
-      return (
-        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-          成功
-        </span>
-      )
-    case "PROCESSING":
-      return (
-        <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
-          处理中
-        </span>
-      )
-    case "APPLYING":
-      return (
-        <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
-          申请中
-        </span>
-      )
-    case "FAILED":
-      return (
-        <span className="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-600/20">
-          失败
-        </span>
-      )
-    default:
-      return null
-  }
-}
+import { refundApi, type Refund } from "@/app/services/api-service"
+import Link from "next/link"
+import { useToast } from "@/hooks/use-toast"
+import { Search } from "lucide-react"
 
 export function RefundList() {
+  const [refunds, setRefunds] = useState<Refund[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<RefundStatus | "ALL">("ALL")
-  const [sorting, setSorting] = useState<{ column: keyof Refund; direction: "asc" | "desc" }>({
-    column: "createdAt",
-    direction: "desc",
-  })
+  const [statusFilter, setStatusFilter] = useState<string>("")
+  const limit = 10
+  const { toast } = useToast()
 
-  // 过滤退款记录
-  const filteredRefunds = refunds.filter((refund) => {
-    const matchesSearch =
-      refund.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (refund.refundId && refund.refundId.toLowerCase().includes(searchTerm.toLowerCase()))
+  const fetchRefunds = async () => {
+    try {
+      setLoading(true)
+      const data = await refundApi.getRefunds({
+        status: statusFilter || undefined,
+        search: searchTerm || undefined,
+        page: currentPage,
+        limit,
+      })
 
-    const matchesStatus = statusFilter === "ALL" || refund.status === statusFilter
-
-    return matchesSearch && matchesStatus
-  })
-
-  // 排序退款记录
-  const sortedRefunds = [...filteredRefunds].sort((a, b) => {
-    const aValue = a[sorting.column]
-    const bValue = b[sorting.column]
-
-    if (typeof aValue === "number" && typeof bValue === "number") {
-      return sorting.direction === "asc" ? aValue - bValue : bValue - aValue
+      setRefunds(data.refunds)
+      setTotalPages(data.pagination.total_pages)
+    } catch (err) {
+      console.error("Failed to fetch refunds:", err)
+      setError("获取退款列表失败")
+      toast({
+        title: "错误",
+        description: "获取退款列表失败",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
     }
-
-    if (typeof aValue === "string" && typeof bValue === "string") {
-      return sorting.direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
-    }
-
-    return 0
-  })
-
-  // 排序处理函数
-  const handleSort = (column: keyof Refund) => {
-    setSorting((prev) => ({
-      column,
-      direction: prev.column === column && prev.direction === "asc" ? "desc" : "asc",
-    }))
   }
 
+  useEffect(() => {
+    fetchRefunds()
+  }, [currentPage, statusFilter])
+
+  // 搜索防抖
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (currentPage === 1) {
+        fetchRefunds()
+      } else {
+        setCurrentPage(1)
+      }
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex w-full max-w-sm items-center space-x-2">
-          <Input
-            placeholder="搜索订单号或退款ID..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full"
-            prefix={<Search className="h-4 w-4 text-muted-foreground" />}
-          />
-          <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as RefundStatus | "ALL")}>
+    <Card>
+      <CardHeader>
+        <CardTitle>退款列表</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {/* 搜索和过滤器 */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="搜索退款..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="状态筛选" />
+              <SelectValue placeholder="退款状态" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">全部状态</SelectItem>
-              <SelectItem value="APPLYING">申请中</SelectItem>
-              <SelectItem value="PROCESSING">处理中</SelectItem>
-              <SelectItem value="SUCCESS">成功</SelectItem>
-              <SelectItem value="FAILED">失败</SelectItem>
+              <SelectItem value="all">全部状态</SelectItem>
+              <SelectItem value="pending">处理中</SelectItem>
+              <SelectItem value="approved">已批准</SelectItem>
+              <SelectItem value="rejected">已拒绝</SelectItem>
+              <SelectItem value="completed">已完成</SelectItem>
             </SelectContent>
           </Select>
         </div>
-      </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[120px]">
-                <div className="flex items-center space-x-1" onClick={() => handleSort("orderNumber")}>
-                  <span>订单号</span>
-                  <ArrowUpDown className="h-4 w-4 cursor-pointer" />
-                </div>
-              </TableHead>
-              <TableHead>退款ID</TableHead>
-              <TableHead>
-                <div className="flex items-center space-x-1" onClick={() => handleSort("amount")}>
-                  <span>退款金额</span>
-                  <ArrowUpDown className="h-4 w-4 cursor-pointer" />
-                </div>
-              </TableHead>
-              <TableHead>原始金额</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead>支付方式</TableHead>
-              <TableHead>
-                <div className="flex items-center space-x-1" onClick={() => handleSort("createdAt")}>
-                  <span>申请时间</span>
-                  <ArrowUpDown className="h-4 w-4 cursor-pointer" />
-                </div>
-              </TableHead>
-              <TableHead>完成时间</TableHead>
-              <TableHead className="w-[80px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedRefunds.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center">
-                  没有找到符合条件的退款记录
-                </TableCell>
-              </TableRow>
-            ) : (
-              sortedRefunds.map((refund) => (
-                <TableRow key={refund.id}>
-                  <TableCell className="font-medium">{refund.orderNumber}</TableCell>
-                  <TableCell>{refund.refundId || "-"}</TableCell>
-                  <TableCell>¥{refund.amount.toFixed(2)}</TableCell>
-                  <TableCell>¥{refund.originalAmount.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <RefundStatusBadge status={refund.status} />
-                  </TableCell>
-                  <TableCell>
-                    <PaymentMethodBadge method={refund.method} />
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{refund.createdAt}</TableCell>
-                  <TableCell className="text-muted-foreground">{refund.completedAt || "-"}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">操作</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
+        {loading ? (
+          <div className="flex justify-center p-4">加载中...</div>
+        ) : error ? (
+          <div className="text-red-500 p-4">{error}</div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>退款ID</TableHead>
+                    <TableHead>订单ID</TableHead>
+                    <TableHead>金额</TableHead>
+                    <TableHead>原因</TableHead>
+                    <TableHead>状态</TableHead>
+                    <TableHead>申请时间</TableHead>
+                    <TableHead>操作</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {refunds.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center">
+                        暂无退款
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    refunds.map((refund) => (
+                      <TableRow key={refund.id}>
+                        <TableCell className="font-medium">{refund.id}</TableCell>
+                        <TableCell>{refund.order_id}</TableCell>
+                        <TableCell>¥{refund.amount.toFixed(2)}</TableCell>
+                        <TableCell>{refund.reason}</TableCell>
+                        <TableCell>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(refund.status)}`}
+                          >
+                            {refund.status}
+                          </span>
+                        </TableCell>
+                        <TableCell>{new Date(refund.created_at).toLocaleString("zh-CN")}</TableCell>
+                        <TableCell>
                           <Link href={`/dashboard/refunds/${refund.id}`}>
-                            <Eye className="mr-2 h-4 w-4" /> 查看详情
+                            <Button variant="outline" size="sm">
+                              查看
+                            </Button>
                           </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/orders/${refund.orderId}`}>
-                            <Eye className="mr-2 h-4 w-4" /> 查看订单
-                          </Link>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* 分页 */}
+            <div className="flex justify-between items-center mt-4">
+              <div className="text-sm text-gray-500">
+                第 {currentPage} 页，共 {totalPages} 页
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  上一页
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  下一页
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
   )
+}
+
+// 获取状态样式类
+function getStatusClass(status: string) {
+  switch (status) {
+    case "approved":
+    case "completed":
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+    case "pending":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+    case "rejected":
+      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+    default:
+      return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+  }
 }

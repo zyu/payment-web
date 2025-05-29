@@ -1,224 +1,218 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { toast } from "@/components/ui/use-toast";
-import { PaymentType } from "./order-list"; // 导入类型定义
+import type React from "react"
 
-export function CreateOrder() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [orderData, setOrderData] = useState({
-    title: "",
-    description: "",
-    amount: "",
-    payment_type: "wechat" as PaymentType,
-  });
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { orderApi, type PaymentMethod, type OrderItem } from "@/app/services/api-service"
+import { useToast } from "@/hooks/use-toast"
+import { Plus, Trash2 } from "lucide-react"
 
-  // 处理输入变化
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setOrderData({
-      ...orderData,
-      [name]: value,
-    });
-  };
+export function CreateOrderForm() {
+  const router = useRouter()
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(false)
+  const [userId, setUserId] = useState("")
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("wechat")
+  const [items, setItems] = useState<Array<{ name: string; price: string; quantity: number }>>([
+    { name: "", price: "", quantity: 1 },
+  ])
 
-  // 处理支付方式选择
-  const handlePaymentTypeChange = (value: string) => {
-    setOrderData({
-      ...orderData,
-      payment_type: value as PaymentType,
-    });
-  };
+  const handleItemChange = (index: number, field: keyof OrderItem, value: string | number) => {
+    const newItems = [...items]
+    newItems[index] = { ...newItems[index], [field]: value }
+    setItems(newItems)
+  }
 
-  // 创建订单
+  const addItem = () => {
+    setItems([...items, { name: "", price: "", quantity: 1 }])
+  }
+
+  const removeItem = (index: number) => {
+    if (items.length > 1) {
+      const newItems = [...items]
+      newItems.splice(index, 1)
+      setItems(newItems)
+    }
+  }
+
+  const calculateTotal = () => {
+    return items.reduce((total, item) => {
+      const price = Number.parseFloat(item.price) || 0
+      return total + price * item.quantity
+    }, 0)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    // 输入验证
-    if (!orderData.title.trim()) {
+    // 验证表单
+    if (!userId) {
       toast({
         title: "错误",
-        description: "请输入商品名称",
+        description: "请输入用户ID",
         variant: "destructive",
-      });
-      return;
+      })
+      return
     }
 
-    const amount = parseFloat(orderData.amount);
-    if (isNaN(amount) || amount <= 0) {
+    if (items.some((item) => !item.name || !item.price)) {
       toast({
         title: "错误",
-        description: "请输入有效的金额",
+        description: "请填写所有商品信息",
         variant: "destructive",
-      });
-      return;
+      })
+      return
     }
 
     try {
-      setLoading(true);
+      setLoading(true)
 
-      // 获取当前用户ID（实际应用中从认证上下文获取）
-      const userId = localStorage.getItem("user")
-        ? JSON.parse(localStorage.getItem("user")!).id
-        : "current-user-id";
+      // 准备订单数据
+      const orderItems = items.map((item) => ({
+        name: item.name,
+        price: Number.parseFloat(item.price),
+        quantity: item.quantity,
+      }))
 
-      // 准备请求数据
-      const requestData = {
-        title: orderData.title,
-        description: orderData.description,
-        amount: parseFloat(orderData.amount),
-        payment_type: orderData.payment_type,
+      const orderData = {
         user_id: userId,
-      };
-
-      // 发送创建订单请求
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
-
-      if (!response.ok) {
-        throw new Error("创建订单失败");
+        amount: calculateTotal(),
+        items: orderItems,
+        payment_method: paymentMethod,
       }
 
-      const data = await response.json();
+      // 创建订单
+      const result = await orderApi.createOrder(orderData)
 
       toast({
         title: "成功",
         description: "订单创建成功",
-      });
+      })
 
-      // 跳转到支付页面或订单详情页
-      router.push(`/dashboard/orders/${data.order_id}`);
+      // 跳转到订单详情页
+      router.push(`/dashboard/orders/${result.order_id}`)
     } catch (error) {
-      console.error("创建订单错误:", error);
+      console.error("Failed to create order:", error)
       toast({
         title: "错误",
-        description: "创建订单失败，请稍后再试",
+        description: error instanceof Error ? error.message : "创建订单失败",
         variant: "destructive",
-      });
+      })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center">
-        <Button
-          variant="outline"
-          size="icon"
-          className="mr-2"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-2xl font-bold">创建新订单</h1>
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>创建新订单</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="user_id">用户ID</Label>
+            <Input
+              id="user_id"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              placeholder="输入用户ID"
+              required
+            />
+          </div>
 
-      <Card>
-        <form onSubmit={handleSubmit}>
-          <CardHeader>
-            <CardTitle>订单信息</CardTitle>
-            <CardDescription>请填写订单详情以创建新订单</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">商品名称</Label>
-              <Input
-                id="title"
-                name="title"
-                placeholder="请输入商品或服务名称"
-                value={orderData.title}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">商品描述</Label>
-              <Textarea
-                id="description"
-                name="description"
-                placeholder="请输入商品或服务的详细描述（可选）"
-                value={orderData.description}
-                onChange={handleInputChange}
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="amount">金额（元）</Label>
-              <Input
-                id="amount"
-                name="amount"
-                type="number"
-                placeholder="请输入订单金额"
-                min="0.01"
-                step="0.01"
-                value={orderData.amount}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="payment_type">支付方式</Label>
-              <Select
-                value={orderData.payment_type}
-                onValueChange={handlePaymentTypeChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择支付方式" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="wechat">微信支付</SelectItem>
-                  <SelectItem value="alipay">支付宝</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-end space-x-2">
-            <Button
-              variant="outline"
-              type="button"
-              onClick={() => router.back()}
+          <div className="space-y-2">
+            <Label>支付方式</Label>
+            <RadioGroup
+              value={paymentMethod}
+              onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
+              className="flex space-x-4"
             >
-              取消
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="wechat" id="wechat" />
+                <Label htmlFor="wechat">微信支付</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="alipay" id="alipay" />
+                <Label htmlFor="alipay">支付宝</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div className="space-y-4">
+            <Label>订单商品</Label>
+            {items.map((item, index) => (
+              <div key={index} className="grid gap-4 grid-cols-12 items-end">
+                <div className="col-span-5 space-y-2">
+                  <Label htmlFor={`item-name-${index}`}>商品名称</Label>
+                  <Input
+                    id={`item-name-${index}`}
+                    value={item.name}
+                    onChange={(e) => handleItemChange(index, "name", e.target.value)}
+                    placeholder="商品名称"
+                    required
+                  />
+                </div>
+                <div className="col-span-3 space-y-2">
+                  <Label htmlFor={`item-price-${index}`}>单价</Label>
+                  <Input
+                    id={`item-price-${index}`}
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    value={item.price}
+                    onChange={(e) => handleItemChange(index, "price", e.target.value)}
+                    placeholder="单价"
+                    required
+                  />
+                </div>
+                <div className="col-span-3 space-y-2">
+                  <Label htmlFor={`item-quantity-${index}`}>数量</Label>
+                  <Input
+                    id={`item-quantity-${index}`}
+                    type="number"
+                    min="1"
+                    value={item.quantity}
+                    onChange={(e) => handleItemChange(index, "quantity", Number.parseInt(e.target.value))}
+                    required
+                  />
+                </div>
+                <div className="col-span-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeItem(index)}
+                    disabled={items.length === 1}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+
+            <Button type="button" variant="outline" onClick={addItem} className="w-full">
+              <Plus className="mr-2 h-4 w-4" />
+              添加商品
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "创建中..." : "创建订单"}
-            </Button>
-          </CardFooter>
+
+            <div className="flex justify-between pt-4 border-t">
+              <span className="font-bold">总计</span>
+              <span className="font-bold">¥{calculateTotal().toFixed(2)}</span>
+            </div>
+          </div>
+
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "创建中..." : "创建订单"}
+          </Button>
         </form>
-      </Card>
-    </div>
-  );
+      </CardContent>
+    </Card>
+  )
 }

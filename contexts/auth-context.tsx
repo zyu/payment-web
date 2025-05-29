@@ -1,119 +1,94 @@
-"use client";
+"use client"
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
-import { useRouter } from "next/navigation";
-import {
-  getCurrentUser,
-  getAuthToken,
-  setAuthInfo,
-  clearAuthInfo,
-  isAuthenticated,
-} from "@/lib/auth-utils";
+import type React from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { useRouter } from "next/navigation"
+import { getCurrentUser, getAuthToken, setAuthInfo, clearAuthInfo, isAuthenticated } from "@/lib/auth-utils"
+import { authApi } from "@/app/services/api-service"
 
 // 用户类型定义
 interface User {
-  id: string;
-  username?: string;
-  [key: string]: any; // 允许其他属性
+  id: string
+  name: string
+  email: string
+  created_at: string
+  updated_at: string
 }
 
 // 认证上下文类型
 interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  checkAuth: () => boolean;
+  user: User | null
+  token: string | null
+  isLoading: boolean
+  login: (email: string, password: string) => Promise<void>
+  logout: () => void
+  checkAuth: () => boolean
 }
 
 // 创建认证上下文
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // 认证提供者组件属性
 interface AuthProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 // 认证提供者组件
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
 
   // 初始化认证状态
   useEffect(() => {
     const initAuth = () => {
-      const storedToken = getAuthToken();
-      const storedUser = getCurrentUser();
+      const storedToken = getAuthToken()
+      const storedUser = getCurrentUser()
 
-      setToken(storedToken);
-      setUser(storedUser);
-      setIsLoading(false);
-    };
+      setToken(storedToken)
+      setUser(storedUser)
+      setIsLoading(false)
+    }
 
-    initAuth();
-  }, []);
+    initAuth()
+  }, [])
 
-  // 登录函数
-  const login = async (username: string, password: string) => {
-    setIsLoading(true);
+  // 登录函数 - 使用新的API接口
+  const login = async (email: string, password: string) => {
+    setIsLoading(true)
 
     try {
       // 调用登录API
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error("登录失败");
-      }
-
-      // 解析响应
-      const data = await response.json();
-
-      // 假设响应中包含token和用户信息
-      const newToken = data.token;
-      const newUser = data.user;
+      const data = await authApi.login({ email, password })
 
       // 存储认证信息
-      setToken(newToken);
-      setUser(newUser);
-      setAuthInfo(newToken, newUser);
+      setToken(data.token)
+      setUser(data.user)
+      setAuthInfo(data.token, data.user)
 
       // 登录成功后跳转到仪表盘
-      router.push("/dashboard");
+      router.push("/dashboard")
     } catch (error) {
-      console.error("Login error:", error);
-      throw error;
+      console.error("Login error:", error)
+      throw error
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   // 退出登录
   const logout = () => {
-    setToken(null);
-    setUser(null);
-    clearAuthInfo();
-    router.push("/login");
-  };
+    setToken(null)
+    setUser(null)
+    clearAuthInfo()
+    router.push("/login")
+  }
 
   // 检查用户是否已认证
   const checkAuth = () => {
-    return isAuthenticated();
-  };
+    return isAuthenticated()
+  }
 
   // 提供认证上下文
   const value = {
@@ -123,46 +98,46 @@ export function AuthProvider({ children }: AuthProviderProps) {
     login,
     logout,
     checkAuth,
-  };
+  }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 // 使用认证上下文的Hook
 export function useAuth() {
-  const context = useContext(AuthContext);
+  const context = useContext(AuthContext)
 
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth must be used within an AuthProvider")
   }
 
-  return context;
+  return context
 }
 
 // 保护需要认证的路由的高阶组件
 export function withAuth<P extends object>(Component: React.ComponentType<P>) {
   return function AuthenticatedComponent(props: P) {
-    const { user, isLoading } = useAuth();
-    const router = useRouter();
+    const { user, isLoading } = useAuth()
+    const router = useRouter()
 
     useEffect(() => {
       if (!isLoading && !user) {
-        router.push("/login");
+        router.push("/login")
       }
-    }, [user, isLoading, router]);
+    }, [user, isLoading, router])
 
     if (isLoading) {
       return (
         <div className="flex justify-center items-center h-screen">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
         </div>
-      );
+      )
     }
 
     if (!user) {
-      return null;
+      return null
     }
 
-    return <Component {...props} />;
-  };
+    return <Component {...props} />
+  }
 }

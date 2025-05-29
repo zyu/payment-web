@@ -1,82 +1,47 @@
-// app/lib/auth-utils.ts
-/**
- * 从localStorage获取当前登录用户信息
- * 实际项目中应根据认证系统调整此函数
- */
-export function getCurrentUser() {
-  // 仅在客户端运行
-  if (typeof window === "undefined") {
-    return null;
-  }
+// lib/auth-utils.ts
 
+const AUTH_TOKEN_KEY = "authToken"
+const CURRENT_USER_KEY = "currentUser"
+
+export const getAuthToken = () => {
+  if (typeof window === "undefined") {
+    return null
+  }
+  return localStorage.getItem(AUTH_TOKEN_KEY)
+}
+
+export const getCurrentUser = () => {
+  if (typeof window === "undefined") {
+    return null
+  }
+  const userString = localStorage.getItem(CURRENT_USER_KEY)
   try {
-    const userStr = localStorage.getItem("user");
-    if (!userStr) {
-      return null;
-    }
-
-    return JSON.parse(userStr);
+    return userString ? JSON.parse(userString) : null
   } catch (error) {
-    console.error("Error getting current user:", error);
-    return null;
+    console.error("Error parsing user data:", error)
+    return null
   }
 }
 
-/**
- * 从localStorage获取认证token
- */
-export function getAuthToken() {
-  // 仅在客户端运行
+export const setAuthInfo = (token: string, user: any) => {
   if (typeof window === "undefined") {
-    return null;
+    return
   }
-
-  return localStorage.getItem("auth-token");
+  localStorage.setItem(AUTH_TOKEN_KEY, token)
+  localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user))
 }
 
-/**
- * 设置认证信息到localStorage
- */
-export function setAuthInfo(user: any) {
-  // 仅在客户端运行
+export const clearAuthInfo = () => {
   if (typeof window === "undefined") {
-    return;
+    return
   }
-
-  // token已经通过cookie设置，这里只存储用户信息
-  localStorage.setItem("user", JSON.stringify(user));
+  localStorage.removeItem(AUTH_TOKEN_KEY)
+  localStorage.removeItem(CURRENT_USER_KEY)
 }
 
-/**
- * 清除认证信息
- */
-export function clearAuthInfo() {
-  // 仅在客户端运行
+export const isAuthenticated = () => {
   if (typeof window === "undefined") {
-    return;
+    return false
   }
-
-  localStorage.removeItem("user");
-}
-
-/**
- * 检查用户是否已登录
- */
-export function isAuthenticated() {
-  return !!getCurrentUser();
-}
-
-/**
- * 在组件中检查认证状态并重定向
- * 可以在需要保护的组件中使用这个函数
- */
-export async function checkAuthAndRedirect(router: any) {
-  const user = getCurrentUser();
-
-  if (!user) {
-    router.push("/login");
-    return null;
-  }
-
-  return user;
+  return !!localStorage.getItem(AUTH_TOKEN_KEY)
 }

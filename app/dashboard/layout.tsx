@@ -1,24 +1,42 @@
+"use client"
+
 import type React from "react"
-import { DashboardHeader } from "@/components/layout/header"
-import { DashboardSidebar } from "@/components/layout/sidebar"
-import { SidebarProvider } from "@/components/ui/sidebar" 
 
- 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) { 
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { MainLayout } from "@/components/layout/main-layout"
 
-  return ( 
-      <SidebarProvider defaultOpen={true}>
-        <div className="flex min-h-screen w-full">
-          <DashboardSidebar />
-          <div className="flex flex-1 flex-col w-full">
-            <DashboardHeader />
-            <main className="flex-1 w-full p-4 md:p-6">{children}</main>
-          </div>
-        </div>
-      </SidebarProvider> 
-  )
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    // 检查用户是否已登录
+    const checkAuth = () => {
+      const token = localStorage.getItem("authToken")
+      if (!token) {
+        router.push("/login")
+        return
+      }
+      setIsAuthenticated(true)
+      setIsLoading(false)
+    }
+
+    checkAuth()
+  }, [router])
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return null // 等待重定向
+  }
+
+  return <MainLayout>{children}</MainLayout>
 }

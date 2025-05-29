@@ -1,35 +1,42 @@
-import { Badge } from "@/components/ui/badge"
-import type { PaymentMethod } from "@/lib/types/order"
+import { cn } from "@/lib/utils"
 
 interface PaymentMethodBadgeProps {
-  method: PaymentMethod
+  type: string
+  className?: string
 }
 
-export function PaymentMethodBadge({ method }: PaymentMethodBadgeProps) {
-  const getVariant = () => {
+export function PaymentMethodBadge({ type, className }: PaymentMethodBadgeProps) {
+  const getMethodClass = (method: string) => {
     switch (method) {
-      case "wechat":
-        return "outline"
       case "alipay":
-        return "outline"
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+      case "wechat":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
       default:
-        return "outline"
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
     }
   }
-  switch (method) {
-    case "wechat":
-      return (
-        <Badge variant={getVariant() as any} className="bg-emerald-50 text-emerald-700 border-emerald-200">
-          微信支付
-        </Badge>
-      )
-    case "alipay":
-      return (
-        <Badge variant={getVariant() as any} className="bg-blue-50 text-blue-700 border-blue-200">
-          支付宝
-        </Badge>
-      )
-    default:
-      return <Badge variant="outline">未知方式</Badge>
+
+  const getMethodText = (method: string) => {
+    switch (method) {
+      case "alipay":
+        return "支付宝"
+      case "wechat":
+        return "微信支付"
+      default:
+        return method
+    }
   }
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+        getMethodClass(type),
+        className,
+      )}
+    >
+      {getMethodText(type)}
+    </span>
+  )
 }
