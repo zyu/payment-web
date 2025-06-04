@@ -36,6 +36,7 @@ export interface RefundRequest {
   order_id: string
   amount: number
   reason: string
+  refund_amount: number
 }
 
 export interface Refund {

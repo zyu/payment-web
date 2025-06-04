@@ -6,6 +6,8 @@ export function generateStaticParams() {
   return [{ id: "1" }, { id: "2" }, { id: "3" }, { id: "4" }, { id: "5" }]
 }
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
-  return <OrderDetailPageClient orderId={params.id} />
+export default async function OrderDetailPage({ params }: { params: { id: string } }) {
+  const resolvedParams = await params
+  console.log("Resolved Params:", resolvedParams)
+  return <OrderDetailPageClient orderId={resolvedParams.id} />
 }

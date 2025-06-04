@@ -128,6 +128,7 @@ export default function CreateRefundPage() {
         order_id: selectedOrderId,
         amount: Number.parseFloat(refundAmount),
         reason: refundReason,
+        refund_amount: Number.parseFloat(refundAmount),
       })
 
       setSuccess("退款申请已成功提交，请等待审核")

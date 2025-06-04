@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Download, Printer } from "lucide-react"
 import { refundApi, type Refund, orderApi } from "@/app/services/api-service"
 import { useToast } from "@/hooks/use-toast"
+import { Input } from "@/components/ui/input"
 
 export default function RefundDetailPageClient() {
   const params = useParams()
@@ -48,6 +49,14 @@ export default function RefundDetailPageClient() {
       fetchRefundDetail()
     }
   }, [refundId, toast])
+
+   const [inputRefundAmount, setInputRefundAmount] = useState(refund?.amount ?? "")
+
+    useEffect(() => {
+      if (refund) {
+        setInputRefundAmount(refund.amount)
+      }
+    }, [refund])
 
   const getStatusClass = (status: string) => {
     switch (status) {
@@ -161,9 +170,23 @@ export default function RefundDetailPageClient() {
                 </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">退款金额</dt>
-                <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">¥{refund.amount.toFixed(2)}</dd>
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">退款总金额金额</dt>
+                <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">¥{refund.amount}</dd>
               </div>
+               <div>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">实际退款金额</dt>
+                  <dd className="mt-1">
+                    <Input
+                      type="number"
+                      min={0.01}
+                      step={0.01}
+                      value={inputRefundAmount}
+                      onChange={e => setInputRefundAmount(e.target.value)}
+                      className="w-32"
+                      placeholder="输入退款金额"
+                    />
+                  </dd>
+                </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">退款原因</dt>
                 <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">{refund.reason}</dd>

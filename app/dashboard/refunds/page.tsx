@@ -171,7 +171,7 @@ export default function RefundsPage() {
                             <TableRow key={refund.id}>
                               <TableCell className="font-medium">{refund.id}</TableCell>
                               <TableCell>{refund.order_id}</TableCell>
-                              <TableCell>¥{refund.amount.toFixed(2)}</TableCell>
+                              <TableCell>¥{refund.amount}</TableCell>
                               <TableCell>{refund.reason}</TableCell>
                               <TableCell>
                                 <span

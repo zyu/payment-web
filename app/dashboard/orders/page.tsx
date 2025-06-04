@@ -1,32 +1,51 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Plus } from "lucide-react"
-import Link from "next/link"
-import { orderApi, type Order } from "@/app/services/api-service"
-import { useToast } from "@/hooks/use-toast"
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search, Plus } from "lucide-react";
+import Link from "next/link";
+import { orderApi, type Order } from "@/app/services/api-service";
+import { useToast } from "@/hooks/use-toast";
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("")
-  const [sortBy, setSortBy] = useState("created_at")
-  const [sortOrder, setSortOrder] = useState("desc")
-  const limit = 10
-  const { toast } = useToast()
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const limit = 10;
+  const { toast } = useToast();
 
   const fetchOrders = async () => {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const data = await orderApi.getOrders({
         status: statusFilter || undefined,
         search: searchTerm || undefined,
@@ -34,94 +53,94 @@ export default function OrdersPage() {
         sortOrder,
         page: currentPage,
         limit,
-      })
+      });
 
-      setOrders(data.orders)
-      setTotalPages(data.pagination.total_pages)
+      setOrders(data.orders);
+      setTotalPages(data.pagination.total_pages);
     } catch (error) {
-      console.error("获取订单失败", error)
+      console.error("获取订单失败", error);
       toast({
         title: "错误",
         description: "获取订单失败",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchOrders()
-  }, [currentPage, statusFilter, sortBy, sortOrder])
+    fetchOrders();
+  }, [currentPage, statusFilter, sortBy, sortOrder]);
 
   // 搜索防抖
   useEffect(() => {
     const timer = setTimeout(() => {
       if (currentPage === 1) {
-        fetchOrders()
+        fetchOrders();
       } else {
-        setCurrentPage(1)
+        setCurrentPage(1);
       }
-    }, 500)
+    }, 500);
 
-    return () => clearTimeout(timer)
-  }, [searchTerm])
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const getStatusClass = (status: string) => {
     switch (status) {
       case "paid":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
       case "pending":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
       case "cancelled":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
       case "refunded":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
       case "failed":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
     }
-  }
+  };
 
   const getPaymentMethodClass = (method: string) => {
     switch (method) {
       case "alipay":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
       case "wechat":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
     }
-  }
+  };
 
   const getStatusText = (status: string) => {
     switch (status) {
       case "pending":
-        return "待支付"
+        return "待支付";
       case "paid":
-        return "已支付"
+        return "已支付";
       case "cancelled":
-        return "已取消"
+        return "已取消";
       case "refunded":
-        return "已退款"
+        return "已退款";
       case "failed":
-        return "支付失败"
+        return "支付失败";
       default:
-        return status
+        return status;
     }
-  }
+  };
 
   const getPaymentMethodText = (method: string) => {
     switch (method) {
       case "alipay":
-        return "支付宝"
+        return "支付宝";
       case "wechat":
-        return "微信支付"
+        return "微信支付";
       default:
-        return method
+        return method;
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
@@ -177,9 +196,9 @@ export default function OrdersPage() {
                 <Select
                   value={`${sortBy}-${sortOrder}`}
                   onValueChange={(value) => {
-                    const [field, order] = value.split("-")
-                    setSortBy(field)
-                    setSortOrder(order)
+                    const [field, order] = value.split("-");
+                    setSortBy(field);
+                    setSortOrder(order);
                   }}
                 >
                   <SelectTrigger className="w-[180px]">
@@ -197,7 +216,10 @@ export default function OrdersPage() {
               {isLoading ? (
                 <div className="space-y-2">
                   {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-md" />
+                    <div
+                      key={i}
+                      className="h-12 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-md"
+                    />
                   ))}
                 </div>
               ) : (
@@ -220,29 +242,53 @@ export default function OrdersPage() {
                         {orders && orders.length > 0 ? (
                           orders.map((order) => (
                             <TableRow key={order.id}>
-                              <TableCell className="font-medium">{order.id}</TableCell>
+                              <TableCell className="font-medium">
+                                {order.id}
+                              </TableCell>
                               <TableCell>{order.user_id}</TableCell>
-                              <TableCell>¥{Number(order.amount).toFixed(2)}</TableCell>
                               <TableCell>
-                                {Array.isArray(order.items) && order.items.length > 0
-                                  ? order.items.map((item) => item.name).join(", ")
-                                  : "无商品信息"}
+                                ¥{Number(order.amount).toFixed(2)}
+                              </TableCell>
+                              <TableCell>
+                                {(() => {
+                                  let items: any[] = [];
+                                  if (Array.isArray(order.items)) {
+                                    items = order.items;
+                                  } else if (typeof order.items === "string") {
+                                    try {
+                                      items = JSON.parse(order.items);
+                                    } catch {
+                                      items = [];
+                                    }
+                                  }
+                                  return items.length > 0
+                                    ? items.map((item) => item.name).join(", ")
+                                    : "无商品信息";
+                                })()}
                               </TableCell>
                               <TableCell>
                                 <span
-                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentMethodClass(order.payment_method)}`}
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentMethodClass(
+                                    order.payment_method
+                                  )}`}
                                 >
                                   {getPaymentMethodText(order.payment_method)}
                                 </span>
                               </TableCell>
                               <TableCell>
                                 <span
-                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(order.status)}`}
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(
+                                    order.status
+                                  )}`}
                                 >
                                   {getStatusText(order.status)}
                                 </span>
                               </TableCell>
-                              <TableCell>{new Date(order.created_at).toLocaleString("zh-CN")}</TableCell>
+                              <TableCell>
+                                {new Date(order.created_at).toLocaleString(
+                                  "zh-CN"
+                                )}
+                              </TableCell>
                               <TableCell className="text-right">
                                 <Link href={`/dashboard/orders/${order.id}`}>
                                   <Button variant="outline" size="sm">
@@ -272,7 +318,9 @@ export default function OrdersPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(1, prev - 1))
+                        }
                         disabled={currentPage === 1}
                       >
                         上一页
@@ -280,7 +328,11 @@ export default function OrdersPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                        onClick={() =>
+                          setCurrentPage((prev) =>
+                            Math.min(totalPages, prev + 1)
+                          )
+                        }
                         disabled={currentPage === totalPages}
                       >
                         下一页
@@ -299,14 +351,16 @@ export default function OrdersPage() {
             <Card>
               <CardHeader>
                 <CardTitle>{getStatusText(status)}订单</CardTitle>
-                <CardDescription>查看所有{getStatusText(status)}的订单</CardDescription>
+                <CardDescription>
+                  查看所有{getStatusText(status)}的订单
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button
                   onClick={() => {
-                    setStatusFilter(status)
+                    setStatusFilter(status);
                     // 切换到"所有订单"标签页以显示过滤结果
-                    document.querySelector('[value="all"]')?.click()
+                    document.querySelector('[value="all"]')?.click();
                   }}
                 >
                   查看{getStatusText(status)}订单
@@ -317,5 +371,5 @@ export default function OrdersPage() {
         ))}
       </Tabs>
     </div>
-  )
+  );
 }

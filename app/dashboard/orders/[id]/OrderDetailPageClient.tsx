@@ -165,15 +165,15 @@ export default function OrderDetailPageClient({ orderId }: OrderDetailPageClient
                 <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">订单金额</dt>
                 <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">¥{Number(order.amount).toFixed(2)}</dd>
               </div>
-              <div>
+              {/* <div>
                 <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">计算金额</dt>
                 <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">¥{calculateTotal().toFixed(2)}</dd>
-              </div>
+              </div> */}
             </dl>
           </CardContent>
         </Card>
       </div>
-
+{/* 
       <Card>
         <CardHeader>
           <CardTitle>订单明细</CardTitle>
@@ -207,7 +207,7 @@ export default function OrderDetailPageClient({ orderId }: OrderDetailPageClient
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card>
         <CardHeader>
